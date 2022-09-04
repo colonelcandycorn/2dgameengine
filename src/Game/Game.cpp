@@ -81,13 +81,13 @@ void Game::ProcessInput() {
     }
 }
 
-glm::vec2 playerPosition;
-glm::vec2 playerVelocity;
 
 void Game::Setup() {
     //TODO: Initialize game objects
-    playerPosition = glm::vec2(10.0, 20.0);
-    playerVelocity = glm::vec2(100.0, 0.0);
+    //ENTITY Tank = registry.CreateEntity() 
+	//tank.AddComponent<TransformCompenet>();
+	//tank.AddComponenet<BoxColliderCompenet>();
+	//tank.AddCompenent<SpriteCompenent>("./assets/images/tank.png");
 }
 void Game::Update() {
     int timeToWait = MILLISECONDS_PER_FRAME - SDL_GetTicks() - millisecondsPreviousFrame;
@@ -96,30 +96,23 @@ void Game::Update() {
         SDL_Delay(timeToWait);
 
     //convert difference in time to seconds instead of milliseconds
-    double deltaTime = (SDL_GetTicks() - millisecondsPreviousFrame) / 1000.0;
+    //double deltaTime = (SDL_GetTicks() - millisecondsPreviousFrame) / 1000.0;
 
     millisecondsPreviousFrame = SDL_GetTicks();
-    playerPosition.x += playerVelocity.x * deltaTime;
-    playerPosition.y += playerVelocity.y * deltaTime;
+    
+
+	//MovementSystem.Update();
+	//CollisionSystem.Update();
+	//DamageSystem.Update();
 }
 
 void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 0x15, 0x15, 0x15, 0xff);
     SDL_RenderClear(renderer);
 
-    //Load PNG
-    SDL_Surface* surface = IMG_Load("./assets/images/tank-tiger-right.png");
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
+    // Render game objects ..
 
-    //Texture to Rect
-    SDL_Rect dstRect = {static_cast<int>(playerPosition.x),
-                        static_cast<int>(playerPosition.y),
-                        32,
-                        32};
-    SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
 
-    SDL_DestroyTexture(texture);
     SDL_RenderPresent(renderer);
 }
 
