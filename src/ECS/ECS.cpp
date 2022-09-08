@@ -2,6 +2,8 @@
 #include "../Logger/Logger.h"
 //TODO: Implement functions for ECS
 
+int IComponent::nextId = 0;
+
 /////////////////////////////////////////////////
 // System
 // Process Entities with a specific signature
@@ -47,4 +49,20 @@ void Registry::Update() {
     //Add entities that are waiting to be added
 
     //Remove entities that are waiting to be killed
+}
+
+void Registry::AddEntityToSystems(Entity entity) {
+    auto entityId = entity.GetId();
+
+    const auto& entityComponentSignature = entityComponentSignatures[entityId];
+
+    for (auto& system: systems) {
+        const auto& systemComponentSignature = system.second->GetComponentSignature();
+
+        bool isInterested = (entityComponentSignature & systemComponentSignature) == systemComponentSignature;
+
+        if (isInterested) {
+            system.second->AddEntityToSystem(entity);
+        }
+    }
 }

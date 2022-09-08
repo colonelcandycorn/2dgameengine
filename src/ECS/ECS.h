@@ -8,6 +8,8 @@
 #include <typeindex>
 #include <set>
 
+#include <memory>
+
 const unsigned int MAX_COMPONENTS = 32;
 
 typedef std::bitset<MAX_COMPONENTS> Signature;
@@ -153,34 +155,71 @@ public:
     //ENTITY Management
 
     Entity CreateEntity();
-    //void AddEntityToSystem(Entity entity);
-    //void KillEntity(Entity entity);
 
     // COMPONENT Management
 
     template <typename TComponent, typename ...TArgs> void AddComponent(Entity entity, TArgs&&...args);
+    template <typename TComponent> void RemoveComponent(Entity entity);
+    template<typename TComponent> bool HasComponent(Entity entity) const;
 
-    //void AddSystem();
-    //void RemoveSystem();
-    // bool HasSystem();
-    // GetSystem();
+    // SYSTEM Management
+    template<typename TSystem, typename ...TArgs> void AddSystem(TArgs&&...args);
+    template <typename TSystem> void RemoveSystem();
+    template <typename TSystem> bool HasSystem() const;
+    template <typename TSystem> TSystem& GetSystem() const;
 
-   // void AddComponent();
+    // Check component signature of an entity and add to system
+    void AddEntityToSystems(Entity entity);
 
-   // void RemoveComponent();
-   // bool HasComponent(Entity entity);
-   // Entity GetComponent(Entity entity);
+
+
 
     //Set of entities to be added or removed when Registry updates
     std::set<Entity> entitiesToBeAdded;
     std::set<Entity> entitiesToBeKilled;
 };
 
+/////////////////////////////////////////
+// SYSTEM TEMPLATE FUNCTIONS
+/////////////////////////////////////////
+
 template <typename TComponent>
 void System::RequireComponent() {
     const auto componentId = Component<TComponent>::GetId();
     componentSignature.set(componentId);
 }
+
+//////////////////////////////////////////////////////////
+//REGISTRY SYSTEM TEMPLATE FUNCTIONS
+/////////////////////////////////////////////////////////
+
+template <typename TSystem, typename ...TArgs>
+void Registry::AddSystem(TArgs &&...args) {
+    TSystem* newSystem(new TSystem(std::forward<TArgs>(args)...));
+    systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
+}
+
+template <typename TSystem>
+void Registry::RemoveSystem() {
+    auto system = systems.find(std::type_index(typeid(TSystem)));
+    systems.erase(system);
+}
+
+template <typename TSystem>
+bool Registry::HasSystem() const {
+    return systems.find(std::type_index(typeid(TSystem))) != systems.end();
+}
+
+template <typename TSystem>
+TSystem &Registry::GetSystem() const {
+    auto system = systems.find(std::type_index(typeid(TSystem)));
+    return *(std::static_pointer_cast<TSystem>(system->second));
+
+}
+
+//////////////////////////////////////////////////////////
+//REGISTRY COMPONENT TEMPLATE FUNCTIONS
+/////////////////////////////////////////////////////////
 
 template <typename TComponent, typename ...TArgs>
 void Registry::AddComponent(Entity entity, TArgs &&...args) {
@@ -208,4 +247,18 @@ void Registry::AddComponent(Entity entity, TArgs &&...args) {
 
     entityComponentSignatures[entityId].set(componentId);
 }
+
+template <typename TComponent>
+void Registry::RemoveComponent(Entity entity) {
+    auto entityId = entity.GetId();
+    auto componentId = Component<TComponent>::GetId();
+
+    entityComponentSignatures[entityId].set(componentId, false);
+}
+
+template <typename TComponent>
+bool Registry::HasComponent(Entity entity) const {
+    return entityComponentSignatures[entity.GetId()].test(Component<TComponent>::GetId());
+}
+
 #endif
