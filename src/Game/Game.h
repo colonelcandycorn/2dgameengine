@@ -9,6 +9,10 @@
 #include <glm/glm.hpp>
 #include "../Logger/Logger.h"
 #include "../ECS/ECS.h"
+#include "../Components/TransformComponent.h"
+#include "../Components/RigidBodyComponent.h"
+#include "../Systems/MovementSystem.h"
+#include <memory>
 
 const int FPS = 60;
 const int MILLISECONDS_PER_FRAME = 1000 / FPS;
@@ -19,6 +23,9 @@ private:
     unsigned int millisecondsPreviousFrame = 0;
     SDL_Window *window;
     SDL_Renderer *renderer;
+
+    std::unique_ptr<Registry> registry;
+
 public:
     Game();
     ~Game();

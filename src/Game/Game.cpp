@@ -10,6 +10,7 @@ Game::Game() {
     // TODO...
     Logger::Log("Game Constructor Called");
     isRunning = false;
+    registry = std::make_unique<Registry>();
     window = nullptr;
     renderer = nullptr;
     windowWidth = 0;
@@ -84,6 +85,16 @@ void Game::ProcessInput() {
 
 void Game::Setup() {
     //TODO: Initialize game objects
+    registry->AddSystem<MovementSystem>();
+
+    Entity tank = registry->CreateEntity();
+
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0,30.0), glm::vec2(1.0, 1.0), 0.0);
+
+    tank.AddComponent<RigidBodyComponent>(glm::vec2 (50.0 , 0));
+
+
+
     //ENTITY Tank = registry.CreateEntity() 
 	//tank.AddComponent<TransformCompenet>();
 	//tank.AddComponenet<BoxColliderCompenet>();
@@ -96,11 +107,16 @@ void Game::Update() {
         SDL_Delay(timeToWait);
 
     //convert difference in time to seconds instead of milliseconds
-    //double deltaTime = (SDL_GetTicks() - millisecondsPreviousFrame) / 1000.0;
+    double deltaTime = (SDL_GetTicks() - millisecondsPreviousFrame) / 1000.0;
 
     millisecondsPreviousFrame = SDL_GetTicks();
     
 
+    // UPDATE SYSTEMS
+    registry->GetSystem<MovementSystem>().Update(deltaTime);
+
+    //UPDATE REGISTRY
+    registry->Update();
 	//MovementSystem.Update();
 	//CollisionSystem.Update();
 	//DamageSystem.Update();
